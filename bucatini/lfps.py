@@ -1,7 +1,7 @@
 #
-# This file is part of LUNA.
+# This file is part of Bucatini.
 #
-# Copyright (c) 2020 Great Scott Gadgets <info@greatscottgadgets.com>
+# Copyright (c) 2021 Great Scott Gadgets <info@greatscottgadgets.com>
 # Copyright (c) 2020 Florent Kermarrec <florent@enjoy-digital.fr>
 #
 # Code based in part on ``usb3_pipe``.

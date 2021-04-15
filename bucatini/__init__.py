@@ -1,21 +1,16 @@
 #
-# This file is part of LUNA.
+# This file is part of Bucatini.
 #
-# Copyright (c) 2020 Great Scott Gadgets <info@greatscottgadgets.com>
-# Copyright (c) 2020 Florent Kermarrec <florent@enjoy-digital.fr>
+# Copyright (c) 2021 Great Scott Gadgets <info@greatscottgadgets.com>
 #
-# Code adapted from ``litex`` and ``usb3_pipe``.
+# Code based in part on ``usb3_pipe``.
 # SPDX-License-Identifier: BSD-3-Clause
-""" SerDes-based USB3 PIPE PHY. """
+""" SerDes-based PIPE PHY. """
 
 #
 # Quick-use aliases
 #
-__all__ = ['SerDesPHY', 'LunaECP5SerDes', 'LunaArtix7SerDes']
-
-# Core hardware.
-from .phy import SerDesPHY
+__all__ = ['SerDesPHY', 'LunaECP5SerDes']
 
 # Backends.
 from .backends.ecp5   import LunaECP5SerDes
-from .backends.artix7 import LunaArtix7SerDes

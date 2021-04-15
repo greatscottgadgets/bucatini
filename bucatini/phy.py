@@ -1,105 +1,83 @@
 #
-# This file is part of LUNA.
+# This file is part of Bucatini.
 #
-# Copyright (c) 2020 Great Scott Gadgets <info@greatscottgadgets.com>
+# Copyright (c) 2021 Great Scott Gadgets <info@greatscottgadgets.com>
 # SPDX-License-Identifier: BSD-3-Clause
 
 import logging
 
-from nmigen      import *
+from abc import ABC
+from nmigen import *
 
-from ...usb.stream  import USBRawSuperSpeedStream
-from .lfps          import LFPSTransceiver
+class BucatiniPHY(Elaboratable, ABC):
+    """ Abstract base class for Bucatini soft PIPE implementations. 
+    
+    Currently compliant with the PHY Interface for PCI Express, revision 3.0,
+    with the following tweaks:
 
+        - Following nMigen conventions, reset is active high, rather than active low.
 
-class SerDesPHY(Elaboratable):
-    """ USB3 SerDes-based PHY.
-
-    Not yet compliant with PIPE; but will be.
+    See Table 5-2 in the PIPE specification r3 for a definition of these signals. Documenting them
+    locally is pending; and should be completed once we've settled on a spec version.
     """
-    def __init__(self, serdes, ss_clk_frequency, fast_clk_frequency, little_endian=True):
-        assert ss_clk_frequency   >= 125e6
-        assert fast_clk_frequency >= 200e6
 
-        # TODO: remove when complete
-        logging.warning("The SerDes-based USB3 PHY is not at all complete.")
-        logging.warning("Do not expect -anything- to work!")
+    # Default to implementing the 32-bit PIPE standard, but allow subclasses to override this.
+    INTERFACE_WIDTH = 32
 
-        self._serdes               = serdes
-        self._clock_frequency      = ss_clk_frequency
-        self._fast_clock_frequency = fast_clk_frequency
-        self._little_endian        = little_endian
+    # Mappings of interface widths to DataBusWidth parameters.
+    _DATA_BUS_WIDTHS = {
+        32: 0b00,
+        16: 0b01,
+        8 : 0b10
+    }
 
-        #
-        # I/O port
-        #
-        self.ready  = Signal()
+    def __init__(self, invert_reset=True):
 
-        self.sink   = USBRawSuperSpeedStream()
-        self.source = USBRawSuperSpeedStream()
-
-        # Temporary?
-        self.train_alignment       = Signal()
-        self.train_equalizer       = Signal()
-        self.rx_polarity           = Signal()
-
-        self.lfps_polling_detected = Signal()
-        self.send_lfps_polling     = Signal()
-        self.total_lfps_sent       = Signal()
-
-        # Debug output.
-        self.alignment_offset        = Signal()
-        self.rx_gpio                 = Signal()
-        self.lfps_signaling_detected = Signal()
-
-
-    def elaborate(self, platform):
-        m = Module()
-
-        # TODO: handle endianness swapping if requested?
+        # Ensure we have a valid interface width.
+        if self.INTERFACE_WIDTH not in self._DATA_BUS_WIDTHS:
+            raise ValueError(f"Bucatini does not support a data bus width of {self.INTERFACE_WIDTH}!")
+        
+        # Compute the width of our data and control signals for this class.
+        data_width = self.INTERFACE_WIDTH * 8
+        ctrl_width = self.INTERFACE_WIDTH * 1
 
         #
-        # Low-Frequency Periodic Signaling generator/receiver.
-        #
-        m.submodules.lfps = lfps = LFPSTransceiver(
-            ss_clk_freq=self._clock_frequency,
-            fast_clock_frequency=self._fast_clock_frequency
-        )
-        m.d.comb += [
-            lfps.tx_polling               .eq(self.send_lfps_polling),
-            self.lfps_polling_detected    .eq(lfps.rx_polling),
-            self.total_lfps_sent          .eq(lfps.tx_count),
-
-            # Pass through our Tx GPIO signals directly to our SerDes.
-            self._serdes.use_tx_as_gpio   .eq(lfps.drive_tx_gpio),
-            self._serdes.tx_gpio          .eq(lfps.tx_gpio),
-            self._serdes.tx_idle          .eq(lfps.tx_idle),
-
-            # Capture the Rx GPIO signal from our SerDes.
-            lfps.lfps_signaling_detected  .eq(self._serdes.lfps_signaling_detected),
-
-            # Debug
-            self.alignment_offset         .eq(self._serdes.alignment_offset),
-            self.lfps_signaling_detected  .eq(lfps.lfps_signaling_detected),
-            self.rx_gpio                  .eq(self._serdes.rx_gpio)
-        ]
-
-        #
-        # Raw SerDes control/translation.
+        # PIPE interface standard.
         #
 
-        # TODO: replace these with PIPE signals
-        m.d.comb += [
-            self.ready                    .eq(self._serdes.ready),
+        # Full-PHY Control and status.
+        self.rate             = Signal()
+        self.reset            = Signal()
+        self.phy_mode         = Signal(2)
+        self.phy_status       = Signal()
+        self.elas_buf_mode    = Signal()
+        self.power_down       = Signal(2)
+        self.pwrpresent       = Signal()
+        self.data_bus_width   = Const(self._DATA_BUS_WIDTHS[self.INTERFACE_WIDTH], width=2)
 
-            self._serdes.enable           .eq(1),
-            self._serdes.rx_align         .eq(self.train_alignment),
-            self._serdes.rx_polarity      .eq(self.rx_polarity),
-            self._serdes.train_equalizer  .eq(self.train_equalizer),
+        # Transmit bus.
+        self.tx_clk           = Signal()
+        self.tx_data          = Signal(data_width)
+        self.tx_datak         = Signal(ctrl_width)
+        self.tx_data_valid    = Signal()
 
-            self._serdes.sink             .stream_eq(self.sink,           endian_swap=self._little_endian),
-            self.source                   .stream_eq(self._serdes.source, endian_swap=self._little_endian)
-        ]
+        # Transmit configuration & status.
+        self.tx_compliance    = Signal()
+        self.tx_oneszeroes    = Signal()
+        self.tx_deemph        = Signal(2)
+        self.tx_margin        = Signal(3)
+        self.tx_swing         = Signal()
+        self.tx_detrx_lpbk    = Signal()
+        self.tx_elecidle      = Signal()
 
+        # Receive bus.
+        self.pclk             = Signal()
+        self.rx_data          = Signal(data_width)
+        self.rx_datak         = Signal(ctrl_width)
+        self.rx_valid         = Signal()
 
-        return m
+        # Receiver configuration & status.
+        self.rx_status        = Array((Signal(3), Signal(3)))
+        self.rx_polarity      = Signal()
+        self.rx_elecidle      = Signal()
+        self.rx_termination   = Signal()
