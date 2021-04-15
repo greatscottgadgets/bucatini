@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "bucatini"
+version = "0.0.1-dev.0"
+description = "an nMigen soft-PIPE implementation for FPGA SerDes"
+authors = ["Katherine Temkin <k@ktemkin.com>"]
+license = "BSD"
+
+[tool.poetry.dependencies]
+python = "^3.7"
+nmigen = {git = "https://github.com/nmigen/nmigen.git"}
+
+[tool.poetry.dev-dependencies]
+tox = "^3.22.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
