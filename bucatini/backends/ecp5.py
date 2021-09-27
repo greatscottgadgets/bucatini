@@ -2,13 +2,13 @@
 # This file is part of Bucatini.
 #
 # Copyright (c) 2021 Great Scott Gadgets <info@greatscottgadgets.com>
-# Copyright (c) 2020 Florent Kermarrec <florent@enjoy-digital.fr>
-# Copyright (c) 2020 whitequark@whitequark.org
+# Copyright (c) 2019-2020 Florent Kermarrec <florent@enjoy-digital.fr>
+# Copyright (c) 2019-2020 whitequark@whitequark.org
 #
 # The ECP5's DCU parameters/signals/instance have been partially documented by whitequark
 # as part of the Yumewatari project: https://github.com/whitequark/Yumewatari.
 #
-# Code based in part on ``litex`` and ``liteiclink``.
+# Code initially ported to nMigen from ``LiteICLink`` and adapted for Bucatini.
 # SPDX-License-Identifier: BSD-3-Clause
 """ SerDes backend for the ECP5. """
 

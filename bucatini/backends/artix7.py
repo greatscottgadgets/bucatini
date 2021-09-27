@@ -2,9 +2,10 @@
 # This file is part of Bucatini.
 #
 # Copyright (c) 2021 Great Scott Gadgets <info@greatscottgadgets.com>
-# Copyright (c) 2020 Florent Kermarrec <florent@enjoy-digital.fr>
+# Copyright (c) 2017-2020 Florent Kermarrec <florent@enjoy-digital.fr>
+# Copyright (c) 2017 Sebastien Bourdeauducq <sb@m-labs.hk>
 #
-# Code based in part on ``usb3_pipe``.
+# Code initially ported to nMigen from ``LiteICLink`` and adapted for Bucatini.
 # SPDX-License-Identifier: BSD-3-Clause
 """ SerDes backend for the Artix7. """
 

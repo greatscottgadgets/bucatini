@@ -2,9 +2,10 @@
 # This file is part of Bucatini.
 #
 # Copyright (c) 2021 Great Scott Gadgets <info@greatscottgadgets.com>
-# Copyright (c) 2020 Florent Kermarrec <florent@enjoy-digital.fr>
+# Copyright (c) 2019-2020 Florent Kermarrec <florent@enjoy-digital.fr>
+# Copyright (c) 2016-2017 Sebastien Bourdeauducq <sb@m-labs.hk>
 #
-# Code based in part on ``litex`` and ``liteiclink``.
+# Code initially ported to nMigen from ``MiSoC/LiteX`` and adapted for Bucatini.
 # SPDX-License-Identifier: BSD-3-Clause
 """ Components for replicating pieces of SerDes functionality in gateware.
 

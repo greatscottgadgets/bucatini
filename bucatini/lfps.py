@@ -2,9 +2,9 @@
 # This file is part of Bucatini.
 #
 # Copyright (c) 2021 Great Scott Gadgets <info@greatscottgadgets.com>
-# Copyright (c) 2020 Florent Kermarrec <florent@enjoy-digital.fr>
+# Copyright (c) 2019-2020 Florent Kermarrec <florent@enjoy-digital.fr>
 #
-# Code based in part on ``usb3_pipe``.
+# Code initially ported to nMigen from ``usb3_pipe`` and adapted for Bucatini.
 # SPDX-License-Identifier: BSD-3-Clause
 """ Low-frequency periodic signaling gateware.
 
